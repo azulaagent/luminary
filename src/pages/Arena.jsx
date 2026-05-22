@@ -9,11 +9,11 @@ import ProceduralAvatar from '../components/ProceduralAvatar'
 function Message({ msg, agent }) {
   const isUser = msg.role === 'user'
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
-      {!isUser && <div className="shrink-0 mt-1"><ProceduralAvatar agent={agent} size={28} /></div>}
-      <div className={`max-w-[75%] px-4 py-3 text-sm leading-relaxed ${isUser ? 'msg-user' : 'msg-bot'}`}>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-2.5 ${isUser ? 'flex-row-reverse' : ''}`}>
+      {!isUser && <div className="shrink-0 mt-0.5"><ProceduralAvatar agent={agent} size={24} /></div>}
+      <div className={`max-w-[75%] px-3.5 py-2.5 text-[13px] leading-relaxed ${isUser ? 'msg-user' : 'msg-bot'}`}>
         {msg.content}
-        {msg.streaming && <span className="inline-block w-1 h-3.5 bg-accent ml-0.5 animate-pulse-soft rounded-full" />}
+        {msg.streaming && <span className="inline-block w-1 h-3 bg-accent ml-0.5 animate-pulse-soft rounded-full" />}
       </div>
     </motion.div>
   )
@@ -28,11 +28,11 @@ export default function Arena() {
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [showSelect, setShowSelect] = useState(false)
-  const messagesEnd = useRef(null)
+  const endRef = useRef(null)
 
   const agent = getAgent(selectedId) || agents[0]
   useEffect(() => { if (id) setSelectedId(id) }, [id])
-  useEffect(() => { messagesEnd.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   const send = useCallback(async () => {
     const text = input.trim()
@@ -42,54 +42,49 @@ export default function Arena() {
     setInput('')
     const userMsg = { role: 'user', content: text }
     const botMsg = { role: 'assistant', content: '', streaming: true }
-    setMessages(prev => [...prev, userMsg, botMsg])
+    setMessages(p => [...p, userMsg, botMsg])
     setIsStreaming(true)
     try {
       let full = ''
       for await (const chunk of streamChat([...messages, userMsg].map(m => ({ role: m.role, content: m.content })), { apiKey: key, systemPrompt: agent.systemPrompt || `You are ${agent.name}. ${agent.personality}`, temperature: 0.7 })) {
         full += chunk
-        setMessages(prev => { const u = [...prev]; u[u.length - 1] = { ...u[u.length - 1], content: full }; return u })
+        setMessages(p => { const u = [...p]; u[u.length - 1] = { ...u[u.length - 1], content: full }; return u })
       }
-      setMessages(prev => { const u = [...prev]; u[u.length - 1] = { ...u[u.length - 1], streaming: false }; return u })
-    } catch (e) {
-      setMessages(prev => { const u = [...prev]; u[u.length - 1] = { role: 'assistant', content: `Error: ${e.message}`, streaming: false }; return u })
-    }
+      setMessages(p => { const u = [...p]; u[u.length - 1] = { ...u[u.length - 1], streaming: false }; return u })
+    } catch (e) { setMessages(p => { const u = [...p]; u[u.length - 1] = { role: 'assistant', content: `Error: ${e.message}`, streaming: false }; return u }) }
     setIsStreaming(false)
   }, [input, isStreaming, agent, messages])
 
-  if (!agent) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4 text-xl">🤖</div>
-          <p className="text-sm text-text-muted mb-3">No agents available</p>
-          <button onClick={() => navigate('/builder')} className="text-accent-bright text-xs hover:underline">Create one →</button>
-        </div>
+  if (!agent) return (
+    <div className="flex-1 flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="w-12 h-12 rounded-[10px] bg-bg-card border border-border flex items-center justify-center mx-auto mb-3 text-lg">🤖</div>
+        <p className="body-md mb-3">No agents available</p>
+        <button onClick={() => navigate('/builder')} className="text-accent-bright text-xs hover:underline">Create one →</button>
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex flex-col h-screen">
       {/* Header */}
-      <div className="flex items-center gap-4 px-6 py-3.5 border-b border-white/[0.04] shrink-0 bg-bg/60 backdrop-blur-xl">
-        <button onClick={() => navigate('/gallery')} className="p-2 rounded-xl hover:bg-white/[0.03] text-text-muted hover:text-text transition-colors"><ArrowLeft size={17} /></button>
+      <div className="flex items-center gap-3 px-6 py-3 border-b border-border shrink-0 bg-bg/80 backdrop-blur-xl sticky top-0 z-10">
+        <button onClick={() => navigate('/gallery')} className="btn btn-ghost btn-sm px-2"><ArrowLeft size={16} /></button>
         <div className="relative">
-          <button onClick={() => setShowSelect(!showSelect)} className="flex items-center gap-3 hover:bg-white/[0.03] px-3 py-2 rounded-xl transition-colors">
-            <ProceduralAvatar agent={agent} size={26} />
+          <button onClick={() => setShowSelect(!showSelect)} className="flex items-center gap-2.5 hover:bg-white/[0.03] px-2.5 py-1.5 rounded-lg transition-colors">
+            <ProceduralAvatar agent={agent} size={22} />
             <div className="text-left">
-              <div className="text-sm font-medium">{agent.name}</div>
+              <div className="text-[13px] font-medium">{agent.name}</div>
               <div className="text-[10px] text-text-dim">{agent.traits?.join(' · ')}</div>
             </div>
-            <ChevronDown size={13} className="text-text-dim ml-0.5" />
+            <ChevronDown size={12} className="text-text-dim" />
           </button>
           <AnimatePresence>
             {showSelect && (
-              <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute top-full left-0 mt-1 w-64 glass rounded-xl p-1.5 z-50 max-h-60 overflow-auto shadow-xl">
+              <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute top-full left-0 mt-1 w-56 card p-1.5 z-50 max-h-56 overflow-auto shadow-xl">
                 {agents.map(a => (
-                  <button key={a.id} onClick={() => { setSelectedId(a.id); setShowSelect(false); setMessages([]) }} className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${a.id === selectedId ? 'bg-accent/[0.08]' : 'hover:bg-white/[0.03]'}`}>
-                    <ProceduralAvatar agent={a} size={22} />
-                    <div><div className="text-[11px] font-medium">{a.name}</div><div className="text-[10px] text-text-dim truncate max-w-[160px]">{a.personality}</div></div>
+                  <button key={a.id} onClick={() => { setSelectedId(a.id); setShowSelect(false); setMessages([]) }} className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors text-[12px] ${a.id === selectedId ? 'bg-accent-muted' : 'hover:bg-white/[0.03]'}`}>
+                    <ProceduralAvatar agent={a} size={18} /> {a.name}
                   </button>
                 ))}
               </motion.div>
@@ -97,34 +92,32 @@ export default function Arena() {
           </AnimatePresence>
         </div>
         <div className="flex-1" />
-        <button onClick={() => setMessages([])} className="p-2 rounded-xl hover:bg-white/[0.03] text-text-dim hover:text-text-muted transition-colors"><RotateCcw size={15} /></button>
+        <button onClick={() => setMessages([])} className="btn btn-ghost btn-sm px-2"><RotateCcw size={14} /></button>
       </div>
 
-      {/* Messages — centered container */}
+      {/* Messages */}
       <div className="flex-1 overflow-auto">
-        <div className="max-w-3xl mx-auto px-6 py-6 space-y-4">
+        <div className="max-w-2xl mx-auto px-6 py-6 space-y-3">
           {messages.length === 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-32 text-center">
-              <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>
-                <div className="w-20 h-20 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center glow-sm">
-                  <ProceduralAvatar agent={agent} size={56} />
-                </div>
-              </motion.div>
-              <h3 className="text-lg font-semibold mt-5">{agent.name}</h3>
-              <p className="text-xs text-text-dim mt-1.5 max-w-xs leading-relaxed">{agent.personality}</p>
-              <p className="text-[11px] text-text-dim/60 mt-6">Start a conversation below</p>
-            </motion.div>
+            <div className="flex flex-col items-center justify-center py-32 text-center">
+              <div className="w-16 h-16 rounded-[12px] bg-bg-card border border-border flex items-center justify-center mb-4">
+                <ProceduralAvatar agent={agent} size={44} />
+              </div>
+              <h3 className="heading-md">{agent.name}</h3>
+              <p className="body-sm mt-1 max-w-xs">{agent.personality}</p>
+              <p className="text-[11px] text-text-dim mt-4">Start a conversation below</p>
+            </div>
           )}
           {messages.map((msg, i) => <Message key={i} msg={msg} agent={agent} />)}
-          <div ref={messagesEnd} />
+          <div ref={endRef} />
         </div>
       </div>
 
-      {/* Input — centered */}
-      <div className="px-6 py-4 border-t border-white/[0.04] shrink-0 bg-bg/60 backdrop-blur-xl">
-        <div className="flex gap-3 items-end max-w-3xl mx-auto">
-          <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }} placeholder={`Message ${agent.name}...`} rows={1} className="flex-1 input-field resize-none" style={{ maxHeight: 120 }} />
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={send} disabled={isStreaming || !input.trim()} className="p-3 rounded-xl bg-accent hover:bg-accent/80 disabled:opacity-30 transition-all glow-sm"><Send size={16} /></motion.button>
+      {/* Input */}
+      <div className="px-6 py-3 border-t border-border shrink-0 bg-bg/80 backdrop-blur-xl">
+        <div className="flex gap-2.5 items-end max-w-2xl mx-auto">
+          <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }} placeholder={`Message ${agent.name}...`} rows={1} className="flex-1 input resize-none" style={{ maxHeight: 100 }} />
+          <button onClick={send} disabled={isStreaming || !input.trim()} className="btn btn-primary px-3 disabled:opacity-30"><Send size={15} /></button>
         </div>
       </div>
     </div>

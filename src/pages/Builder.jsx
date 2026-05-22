@@ -6,9 +6,9 @@ import { useAgents } from '../lib/agents'
 import { chat, getStoredKey } from '../lib/mimo'
 import ProceduralAvatar from '../components/ProceduralAvatar'
 
-const COLORS = ['#7c5bf5', '#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#14b8a6']
-const TOOL_OPTIONS = ['knowledge', 'reasoning', 'creativity', 'code', 'analysis', 'strategy', 'brainstorm', 'planning', 'memory', 'search']
-const EMPTY = { name: '', personality: '', traits: [], color: '#7c5bf5', systemPrompt: '', tools: [] }
+const COLORS = ['#8b5cf6', '#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#06b6d4', '#f97316']
+const TOOLS = ['knowledge', 'reasoning', 'creativity', 'code', 'analysis', 'strategy', 'brainstorm', 'planning', 'memory', 'search']
+const EMPTY = { name: '', personality: '', traits: [], color: '#8b5cf6', systemPrompt: '', tools: [] }
 
 export default function Builder() {
   const navigate = useNavigate()
@@ -19,10 +19,10 @@ export default function Builder() {
   const [saved, setSaved] = useState(false)
 
   const previewAgent = { ...form, id: 'preview', traits: form.traits.length ? form.traits : ['new'] }
-  const update = (key, val) => setForm(f => ({ ...f, [key]: val }))
+  const update = (k, v) => setForm(f => ({ ...f, [k]: v }))
   const addTrait = () => { const t = traitInput.trim().toLowerCase(); if (t && !form.traits.includes(t)) { update('traits', [...form.traits, t]); setTraitInput('') } }
   const removeTrait = (t) => update('traits', form.traits.filter(x => x !== t))
-  const toggleTool = (tool) => update('tools', form.tools.includes(tool) ? form.tools.filter(t => t !== tool) : [...form.tools, tool])
+  const toggleTool = (t) => update('tools', form.tools.includes(t) ? form.tools.filter(x => x !== t) : [...form.tools, t])
 
   const generatePrompt = async () => {
     if (!form.name || !form.personality) return
@@ -30,8 +30,8 @@ export default function Builder() {
     if (!key) { alert('Set your MiMo API key in Settings first'); return }
     setGenerating(true)
     try {
-      const result = await chat([{ role: 'user', content: `Generate a system prompt for an AI agent named "${form.name}" with personality: "${form.personality}". Traits: ${form.traits.join(', ')}. Write ONLY the system prompt, under 200 words, second person ("You are...").` }], { apiKey: key, temperature: 0.8 })
-      update('systemPrompt', result.trim())
+      const r = await chat([{ role: 'user', content: `Generate a system prompt for an AI agent named "${form.name}" with personality: "${form.personality}". Traits: ${form.traits.join(', ')}. Write ONLY the system prompt, under 200 words, second person.` }], { apiKey: key, temperature: 0.8 })
+      update('systemPrompt', r.trim())
     } catch (e) { alert('Error: ' + e.message) }
     setGenerating(false)
   }
@@ -44,114 +44,100 @@ export default function Builder() {
   }
 
   return (
-    <div className="flex-1 flex justify-center px-6 py-8 overflow-auto">
-      <div className="w-full max-w-5xl">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <button onClick={() => navigate('/gallery')} className="p-2 rounded-xl hover:bg-white/[0.03] text-text-muted hover:text-text transition-colors">
-                <ArrowLeft size={18} />
-              </button>
-              <div>
-                <h1 className="text-xl font-bold">Agent Builder</h1>
-                <p className="text-xs text-text-dim mt-0.5">Design your AI agent from scratch</p>
+    <div className="max-w-5xl mx-auto px-8 py-10">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/gallery')} className="btn btn-ghost btn-sm px-2"><ArrowLeft size={16} /></button>
+            <div>
+              <h1 className="heading-lg">Agent Builder</h1>
+              <p className="body-sm">Design your AI agent from scratch</p>
+            </div>
+          </div>
+          <button onClick={handleSave} disabled={!form.name.trim() || saved} className="btn btn-primary disabled:opacity-30 disabled:cursor-not-allowed">
+            {saved ? <><span className="text-success">✓</span> Saved</> : <><Save size={14} /> Save Agent</>}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+          {/* LEFT */}
+          <div className="lg:col-span-3 space-y-3.5">
+            <div className="card p-5">
+              <label className="label">Name</label>
+              <input value={form.name} onChange={e => update('name', e.target.value)} placeholder="Give your agent a name..." className="w-full bg-transparent text-lg font-semibold mt-2 focus:outline-none placeholder:text-text-dim/50" />
+            </div>
+            <div className="card p-5">
+              <label className="label">Personality</label>
+              <textarea value={form.personality} onChange={e => update('personality', e.target.value)} placeholder="Describe how your agent thinks, speaks, and behaves..." rows={3} className="w-full bg-transparent body-md mt-2 focus:outline-none placeholder:text-text-dim/50 resize-none" />
+            </div>
+            <div className="card p-5">
+              <label className="label">Traits</label>
+              <div className="flex flex-wrap gap-1.5 mt-2.5 mb-2.5 min-h-[24px]">
+                <AnimatePresence>
+                  {form.traits.map(t => (
+                    <motion.span key={t} initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-bg-subtle border border-border text-text-secondary">
+                      {t} <button onClick={() => removeTrait(t)} className="hover:text-danger transition-colors"><X size={8} /></button>
+                    </motion.span>
+                  ))}
+                </AnimatePresence>
+              </div>
+              <div className="flex gap-2">
+                <input value={traitInput} onChange={e => setTraitInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTrait()} placeholder="Add a trait..." className="input text-xs py-2" />
+                <button onClick={addTrait} className="btn btn-secondary btn-sm px-2.5"><Plus size={13} /></button>
               </div>
             </div>
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleSave} disabled={!form.name.trim() || saved} className="btn-primary disabled:opacity-30 disabled:cursor-not-allowed">
-              {saved ? <><span className="text-success">✓</span> Saved</> : <><Save size={14} /> Save Agent</>}
-            </motion.button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {/* LEFT: FORM */}
-            <div className="lg:col-span-3 space-y-4">
-              {/* Name */}
-              <div className="glass rounded-2xl p-5">
-                <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">Name</label>
-                <input value={form.name} onChange={e => update('name', e.target.value)} placeholder="Give your agent a name..." className="w-full bg-transparent text-lg font-semibold mt-2.5 focus:outline-none placeholder:text-text-dim/50" />
-              </div>
-
-              {/* Personality */}
-              <div className="glass rounded-2xl p-5">
-                <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">Personality</label>
-                <textarea value={form.personality} onChange={e => update('personality', e.target.value)} placeholder="Describe how your agent thinks, speaks, and behaves..." rows={3} className="w-full bg-transparent text-sm mt-2.5 focus:outline-none placeholder:text-text-dim/50 resize-none leading-relaxed" />
-              </div>
-
-              {/* Traits */}
-              <div className="glass rounded-2xl p-5">
-                <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">Traits</label>
-                <div className="flex flex-wrap gap-2 mt-3 mb-3 min-h-[28px]">
-                  <AnimatePresence>
-                    {form.traits.map(t => (
-                      <motion.span key={t} initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.06] text-text-muted">
-                        {t} <button onClick={() => removeTrait(t)} className="hover:text-danger transition-colors"><X size={9} /></button>
-                      </motion.span>
-                    ))}
-                  </AnimatePresence>
-                </div>
-                <div className="flex gap-2">
-                  <input value={traitInput} onChange={e => setTraitInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTrait()} placeholder="Add a trait..." className="input-field text-xs py-2.5" />
-                  <button onClick={addTrait} className="px-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-accent/30 text-text-muted hover:text-accent transition-colors"><Plus size={14} /></button>
-                </div>
-              </div>
-
-              {/* Capabilities */}
-              <div className="glass rounded-2xl p-5">
-                <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">Capabilities</label>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {TOOL_OPTIONS.map(tool => (
-                    <motion.button key={tool} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={() => toggleTool(tool)} className={`text-[11px] px-3 py-1.5 rounded-xl border transition-all ${form.tools.includes(tool) ? 'border-accent/30 bg-accent/[0.08] text-accent-bright' : 'border-white/[0.06] bg-white/[0.02] text-text-dim hover:border-white/[0.1] hover:text-text-muted'}`}>
-                      {tool}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              {/* System Prompt */}
-              <div className="glass rounded-2xl p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">System Prompt</label>
-                  <button onClick={generatePrompt} disabled={generating || !form.name || !form.personality} className="flex items-center gap-1.5 text-[11px] text-accent-bright hover:text-accent disabled:opacity-30 transition-colors">
-                    <Wand2 size={11} /> {generating ? 'Generating...' : 'Auto-generate'}
+            <div className="card p-5">
+              <label className="label">Capabilities</label>
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
+                {TOOLS.map(t => (
+                  <button key={t} onClick={() => toggleTool(t)} className={`text-[11px] px-2.5 py-1 rounded-md border transition-all ${form.tools.includes(t) ? 'border-accent/30 bg-accent-muted text-accent-bright' : 'border-border bg-bg-subtle text-text-dim hover:border-border-subtle hover:text-text-secondary'}`}>
+                    {t}
                   </button>
-                </div>
-                <textarea value={form.systemPrompt} onChange={e => update('systemPrompt', e.target.value)} placeholder="Define the agent's core instructions..." rows={5} className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-3 text-xs font-mono mt-2 focus:outline-none focus:border-accent/30 transition-all resize-none leading-relaxed placeholder:text-text-dim/40" />
+                ))}
               </div>
             </div>
-
-            {/* RIGHT: PREVIEW */}
-            <div className="lg:col-span-2">
-              <div className="glass gradient-border rounded-2xl p-6 sticky top-6">
-                <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">Live Preview</label>
-                <div className="flex flex-col items-center mt-8 mb-8">
-                  <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 30, repeat: Infinity, ease: 'linear' }} className="relative">
-                    <div className="absolute inset-0 rounded-full blur-2xl opacity-20" style={{ background: form.color }} />
-                    <ProceduralAvatar agent={previewAgent} size={100} />
-                  </motion.div>
-                  <h3 className="text-lg font-semibold mt-5">{form.name || 'Untitled Agent'}</h3>
-                  <p className="text-xs text-text-dim mt-1.5 max-w-[200px] leading-relaxed">{form.personality || 'Define a personality'}</p>
-                </div>
-                <div className="mb-5">
-                  <label className="text-[10px] text-text-dim/60 uppercase tracking-[0.15em]">Color</label>
-                  <div className="flex gap-2.5 mt-2.5 flex-wrap justify-center">
-                    {COLORS.map(c => (
-                      <motion.button key={c} whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} onClick={() => update('color', c)} className={`w-6 h-6 rounded-full transition-all ${form.color === c ? 'ring-2 ring-white/20 ring-offset-2 ring-offset-bg scale-110' : 'opacity-50 hover:opacity-100'}`} style={{ background: c }} />
-                    ))}
-                  </div>
-                </div>
-                <div className="section-divider mb-5" />
-                <div className="space-y-3">
-                  {[{ label: 'Traits', value: form.traits.length }, { label: 'Capabilities', value: form.tools.length }, { label: 'Prompt', value: `${form.systemPrompt.length} chars` }].map(s => (
-                    <div key={s.label} className="flex justify-between text-xs"><span className="text-text-dim">{s.label}</span><span className="text-text-muted font-mono text-[11px]">{s.value}</span></div>
-                  ))}
-                </div>
-                <button onClick={() => setForm({ ...EMPTY })} className="flex items-center gap-1.5 text-[11px] text-text-dim hover:text-text-muted mt-5 mx-auto transition-colors"><RotateCcw size={10} /> Reset</button>
+            <div className="card p-5">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="label">System Prompt</label>
+                <button onClick={generatePrompt} disabled={generating || !form.name || !form.personality} className="text-[11px] text-accent-bright hover:text-accent disabled:opacity-30 transition-colors flex items-center gap-1">
+                  <Wand2 size={10} /> {generating ? 'Generating...' : 'Auto-generate'}
+                </button>
               </div>
+              <textarea value={form.systemPrompt} onChange={e => update('systemPrompt', e.target.value)} placeholder="Define the agent's core instructions..." rows={5} className="w-full bg-bg-subtle border border-border rounded-[10px] px-3.5 py-2.5 text-xs font-mono mt-2 focus:outline-none focus:border-accent/30 transition-colors resize-none leading-relaxed placeholder:text-text-dim/40" />
             </div>
           </div>
-        </motion.div>
-      </div>
+
+          {/* RIGHT: PREVIEW */}
+          <div className="lg:col-span-2">
+            <div className="card p-6 sticky top-6">
+              <label className="label">Live Preview</label>
+              <div className="flex flex-col items-center mt-6 mb-6">
+                <div className="relative">
+                  <div className="absolute inset-0 rounded-full blur-xl opacity-15" style={{ background: form.color }} />
+                  <ProceduralAvatar agent={previewAgent} size={88} />
+                </div>
+                <h3 className="heading-md mt-4">{form.name || 'Untitled Agent'}</h3>
+                <p className="body-sm mt-1 max-w-[180px] text-center">{form.personality || 'Define a personality'}</p>
+              </div>
+              <div className="mb-4">
+                <label className="label">Color</label>
+                <div className="flex gap-2 mt-2 flex-wrap justify-center">
+                  {COLORS.map(c => (
+                    <button key={c} onClick={() => update('color', c)} className={`w-5 h-5 rounded-full transition-all ${form.color === c ? 'ring-2 ring-white/20 ring-offset-1.5 ring-offset-bg scale-110' : 'opacity-40 hover:opacity-100'}`} style={{ background: c }} />
+                  ))}
+                </div>
+              </div>
+              <div className="divider my-4" />
+              <div className="space-y-2.5">
+                {[{ l: 'Traits', v: form.traits.length }, { l: 'Capabilities', v: form.tools.length }, { l: 'Prompt', v: `${form.systemPrompt.length} chars` }].map(s => (
+                  <div key={s.l} className="flex justify-between text-xs"><span className="text-text-dim">{s.l}</span><span className="text-text-muted font-mono text-[11px]">{s.v}</span></div>
+                ))}
+              </div>
+              <button onClick={() => setForm({ ...EMPTY })} className="flex items-center gap-1 text-[11px] text-text-dim hover:text-text-muted mt-4 mx-auto transition-colors"><RotateCcw size={9} /> Reset</button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   )
 }

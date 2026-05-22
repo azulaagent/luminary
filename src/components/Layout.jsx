@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bot, Hammer, LayoutGrid, Zap, MessageSquare, Settings, X } from 'lucide-react'
+import { Bot, Hammer, LayoutGrid, Zap, MessageSquare, Settings, X, ExternalLink } from 'lucide-react'
 import { useState } from 'react'
 import { getStoredKey, setStoredKey } from '../lib/mimo'
 
@@ -19,52 +19,39 @@ function ApiKeyModal({ onClose }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.92, opacity: 0, y: 20 }}
+        initial={{ scale: 0.96, opacity: 0, y: 10 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.92, opacity: 0, y: 20 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="glass gradient-border rounded-2xl p-7 w-full max-w-md mx-4"
+        exit={{ scale: 0.96, opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
+        className="card p-6 w-full max-w-md mx-4 shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-base font-semibold">API Configuration</h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/5 text-text-muted hover:text-text transition-colors">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="heading-sm">API Configuration</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-text-muted transition-colors">
             <X size={16} />
           </button>
         </div>
-        <p className="text-xs text-text-muted mb-4 leading-relaxed">
-          Connect your MiMo API key to unlock AI-powered agent creation and live chat. Stored locally in your browser.
+        <p className="body-sm mb-4">
+          Connect your MiMo API key to unlock AI features. Key is stored locally in your browser.
         </p>
         <input
           type="password"
           value={key}
           onChange={e => setKey(e.target.value)}
           placeholder="sk-..."
-          className="input-field mb-5 font-mono text-xs"
+          className="input font-mono text-xs mb-5"
         />
         <div className="flex gap-3 justify-end">
-          <button onClick={onClose} className="btn-ghost text-xs py-2 px-4">Cancel</button>
-          <button onClick={() => { setStoredKey(key); onClose() }} className="btn-primary text-xs py-2 px-5">Save Key</button>
+          <button onClick={onClose} className="btn btn-ghost btn-sm">Cancel</button>
+          <button onClick={() => { setStoredKey(key); onClose() }} className="btn btn-primary btn-sm">Save Key</button>
         </div>
       </motion.div>
     </motion.div>
-  )
-}
-
-function AmbientBg() {
-  return (
-    <>
-      <div className="ambient-bg">
-        <div className="ambient-orb ambient-orb-1" />
-        <div className="ambient-orb ambient-orb-2" />
-        <div className="ambient-orb ambient-orb-3" />
-      </div>
-      <div className="noise-overlay" />
-    </>
   )
 }
 
@@ -73,36 +60,31 @@ export default function Layout() {
   const [showSettings, setShowSettings] = useState(false)
 
   return (
-    <div className="flex min-h-screen relative">
-      <AmbientBg />
-
+    <div className="flex min-h-screen">
       {/* Sidebar */}
-      <aside className="w-[72px] flex flex-col items-center py-6 gap-1 border-r border-border shrink-0 relative z-10 bg-bg/80 backdrop-blur-xl">
-        <NavLink to="/" className="mb-8">
-          <motion.div
-            whileHover={{ scale: 1.08 }}
-            className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-accent to-purple-600 flex items-center justify-center glow"
-          >
-            <Bot size={18} className="text-white" />
-          </motion.div>
+      <aside className="w-[68px] flex flex-col items-center py-5 shrink-0 border-r border-border bg-bg/80 backdrop-blur-xl sticky top-0 h-screen z-20">
+        <NavLink to="/" className="mb-7">
+          <div className="w-9 h-9 rounded-[10px] bg-accent flex items-center justify-center">
+            <Bot size={17} className="text-white" />
+          </div>
         </NavLink>
 
-        <nav className="flex flex-col gap-1.5 flex-1">
+        <nav className="flex flex-col gap-1 flex-1">
           {NAV.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
               end={to === '/'}
               className={({ isActive }) =>
-                `relative w-11 h-11 rounded-[12px] flex items-center justify-center transition-all duration-200 group
+                `relative w-10 h-10 rounded-[10px] flex items-center justify-center transition-all duration-200 group
                 ${isActive
-                  ? 'bg-accent/15 text-accent-bright glow-sm'
-                  : 'text-text-dim hover:text-text-muted hover:bg-white/[0.03]'
+                  ? 'bg-accent-muted text-accent-bright'
+                  : 'text-text-dim hover:text-text-secondary hover:bg-white/[0.03]'
                 }`
               }
             >
-              <Icon size={17} strokeWidth={1.8} />
-              <span className="absolute left-[52px] px-2.5 py-1.5 text-[11px] bg-bg-elevated border border-border rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all whitespace-nowrap z-50 shadow-lg">
+              <Icon size={16} strokeWidth={1.8} />
+              <span className="absolute left-[50px] px-2 py-1 text-[11px] bg-bg-elevated border border-border rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
                 {label}
               </span>
             </NavLink>
@@ -111,22 +93,22 @@ export default function Layout() {
 
         <button
           onClick={() => setShowSettings(true)}
-          className="w-11 h-11 rounded-[12px] flex items-center justify-center text-text-dim hover:text-text-muted hover:bg-white/[0.03] transition-all"
+          className="w-10 h-10 rounded-[10px] flex items-center justify-center text-text-dim hover:text-text-secondary hover:bg-white/[0.03] transition-all"
         >
-          <Settings size={17} strokeWidth={1.8} />
+          <Settings size={16} strokeWidth={1.8} />
         </button>
       </aside>
 
-      {/* Main — full center */}
-      <main className="flex-1 min-h-screen relative z-10 flex flex-col">
+      {/* Main */}
+      <main className="flex-1 min-h-screen">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="flex-1 flex flex-col"
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="min-h-screen"
           >
             <Outlet />
           </motion.div>
