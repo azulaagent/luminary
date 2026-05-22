@@ -25,20 +25,20 @@ export default function Gallery() {
   const handleDuplicate = (agent) => { const { id, isPreset, createdAt, ...rest } = agent; addAgent({ ...rest, name: `${rest.name} (copy)` }) }
 
   return (
-    <div className="flex-1 flex flex-col items-center px-6 py-8">
+    <div className="flex-1 flex justify-center px-6 py-8 overflow-auto">
       <div className="w-full max-w-5xl mx-auto">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-xl font-bold">Agent Gallery</h1>
-              <p className="text-xs text-text-dim mt-0.5">{agents.length} agents available</p>
-            </div>
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => navigate('/builder')} className="btn-primary">
+          {/* Header — centered */}
+          <div className="text-center mb-8">
+            <h1 className="text-xl font-bold mb-1">Agent Gallery</h1>
+            <p className="text-xs text-text-dim">{agents.length} agents available</p>
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => navigate('/builder')} className="btn-primary mt-4 inline-flex">
               <Plus size={14} /> New Agent
             </motion.button>
           </div>
 
-          <div className="flex gap-3 mb-8">
+          {/* Search & Filter — centered */}
+          <div className="flex gap-3 mb-8 max-w-2xl mx-auto">
             <div className="flex-1 relative">
               <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim" />
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search agents..." className="input-field pl-10 py-2.5 text-sm" />
@@ -55,7 +55,7 @@ export default function Gallery() {
 
           {filtered.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24">
-              <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4 text-xl">🤖</div>
+              <div className="w-14 h-14 rounded-[14px] bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4 text-xl">🤖</div>
               <p className="text-sm text-text-muted mb-1">No agents found</p>
               <p className="text-xs text-text-dim mb-4">Try a different search or create a new agent</p>
               <button onClick={() => navigate('/builder')} className="text-accent-bright text-xs hover:underline">Create your first agent →</button>

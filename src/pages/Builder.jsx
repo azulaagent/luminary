@@ -44,12 +44,12 @@ export default function Builder() {
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center px-6 py-8">
-      <div className="w-full max-w-5xl mx-auto">
+    <div className="flex-1 flex justify-center px-6 py-8 overflow-auto">
+      <div className="w-full max-w-5xl">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button onClick={() => navigate('/gallery')} className="p-2 rounded-xl hover:bg-white/[0.03] text-text-muted hover:text-text transition-colors">
                 <ArrowLeft size={18} />
               </button>
@@ -66,24 +66,26 @@ export default function Builder() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             {/* LEFT: FORM */}
             <div className="lg:col-span-3 space-y-4">
+              {/* Name */}
               <div className="glass rounded-2xl p-5">
                 <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">Name</label>
                 <input value={form.name} onChange={e => update('name', e.target.value)} placeholder="Give your agent a name..." className="w-full bg-transparent text-lg font-semibold mt-2.5 focus:outline-none placeholder:text-text-dim/50" />
               </div>
 
+              {/* Personality */}
               <div className="glass rounded-2xl p-5">
                 <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">Personality</label>
                 <textarea value={form.personality} onChange={e => update('personality', e.target.value)} placeholder="Describe how your agent thinks, speaks, and behaves..." rows={3} className="w-full bg-transparent text-sm mt-2.5 focus:outline-none placeholder:text-text-dim/50 resize-none leading-relaxed" />
               </div>
 
+              {/* Traits */}
               <div className="glass rounded-2xl p-5">
                 <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">Traits</label>
                 <div className="flex flex-wrap gap-2 mt-3 mb-3 min-h-[28px]">
                   <AnimatePresence>
                     {form.traits.map(t => (
                       <motion.span key={t} initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.06] text-text-muted">
-                        {t}
-                        <button onClick={() => removeTrait(t)} className="hover:text-danger transition-colors"><X size={9} /></button>
+                        {t} <button onClick={() => removeTrait(t)} className="hover:text-danger transition-colors"><X size={9} /></button>
                       </motion.span>
                     ))}
                   </AnimatePresence>
@@ -94,17 +96,19 @@ export default function Builder() {
                 </div>
               </div>
 
+              {/* Capabilities */}
               <div className="glass rounded-2xl p-5">
                 <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">Capabilities</label>
                 <div className="flex flex-wrap gap-2 mt-3">
                   {TOOL_OPTIONS.map(tool => (
-                    <motion.button key={tool} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={() => toggleTool(tool)} className={`text-[11px] px-3 py-1.5 rounded-xl border transition-all ${form.tools.includes(tool) ? 'border-accent/30 bg-accent/[0.08] text-accent-bright shadow-[0_0_12px_rgba(124,91,245,0.1)]' : 'border-white/[0.06] bg-white/[0.02] text-text-dim hover:border-white/[0.1] hover:text-text-muted'}`}>
+                    <motion.button key={tool} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={() => toggleTool(tool)} className={`text-[11px] px-3 py-1.5 rounded-xl border transition-all ${form.tools.includes(tool) ? 'border-accent/30 bg-accent/[0.08] text-accent-bright' : 'border-white/[0.06] bg-white/[0.02] text-text-dim hover:border-white/[0.1] hover:text-text-muted'}`}>
                       {tool}
                     </motion.button>
                   ))}
                 </div>
               </div>
 
+              {/* System Prompt */}
               <div className="glass rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">System Prompt</label>
@@ -112,7 +116,7 @@ export default function Builder() {
                     <Wand2 size={11} /> {generating ? 'Generating...' : 'Auto-generate'}
                   </button>
                 </div>
-                <textarea value={form.systemPrompt} onChange={e => update('systemPrompt', e.target.value)} placeholder="Define the agent's core instructions... (or auto-generate)" rows={5} className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-3 text-xs font-mono mt-2 focus:outline-none focus:border-accent/30 transition-all resize-none leading-relaxed placeholder:text-text-dim/40" />
+                <textarea value={form.systemPrompt} onChange={e => update('systemPrompt', e.target.value)} placeholder="Define the agent's core instructions..." rows={5} className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-3 text-xs font-mono mt-2 focus:outline-none focus:border-accent/30 transition-all resize-none leading-relaxed placeholder:text-text-dim/40" />
               </div>
             </div>
 
@@ -122,32 +126,27 @@ export default function Builder() {
                 <label className="text-[10px] font-medium text-text-dim uppercase tracking-[0.15em]">Live Preview</label>
                 <div className="flex flex-col items-center mt-8 mb-8">
                   <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 30, repeat: Infinity, ease: 'linear' }} className="relative">
-                    <div className="absolute inset-0 rounded-full blur-2xl opacity-30" style={{ background: form.color }} />
+                    <div className="absolute inset-0 rounded-full blur-2xl opacity-20" style={{ background: form.color }} />
                     <ProceduralAvatar agent={previewAgent} size={100} />
                   </motion.div>
                   <h3 className="text-lg font-semibold mt-5">{form.name || 'Untitled Agent'}</h3>
-                  <p className="text-xs text-text-dim mt-1.5 text-center max-w-[200px] leading-relaxed">{form.personality || 'Define a personality'}</p>
+                  <p className="text-xs text-text-dim mt-1.5 max-w-[200px] leading-relaxed">{form.personality || 'Define a personality'}</p>
                 </div>
                 <div className="mb-5">
                   <label className="text-[10px] text-text-dim/60 uppercase tracking-[0.15em]">Color</label>
-                  <div className="flex gap-2.5 mt-2.5 flex-wrap">
+                  <div className="flex gap-2.5 mt-2.5 flex-wrap justify-center">
                     {COLORS.map(c => (
-                      <motion.button key={c} whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }} onClick={() => update('color', c)} className={`w-6 h-6 rounded-full transition-all ${form.color === c ? 'ring-2 ring-white/20 ring-offset-2 ring-offset-bg scale-110' : 'opacity-60 hover:opacity-100'}`} style={{ background: c }} />
+                      <motion.button key={c} whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} onClick={() => update('color', c)} className={`w-6 h-6 rounded-full transition-all ${form.color === c ? 'ring-2 ring-white/20 ring-offset-2 ring-offset-bg scale-110' : 'opacity-50 hover:opacity-100'}`} style={{ background: c }} />
                     ))}
                   </div>
                 </div>
                 <div className="section-divider mb-5" />
                 <div className="space-y-3">
                   {[{ label: 'Traits', value: form.traits.length }, { label: 'Capabilities', value: form.tools.length }, { label: 'Prompt', value: `${form.systemPrompt.length} chars` }].map(s => (
-                    <div key={s.label} className="flex justify-between items-center text-xs">
-                      <span className="text-text-dim">{s.label}</span>
-                      <span className="text-text-muted font-mono text-[11px]">{s.value}</span>
-                    </div>
+                    <div key={s.label} className="flex justify-between text-xs"><span className="text-text-dim">{s.label}</span><span className="text-text-muted font-mono text-[11px]">{s.value}</span></div>
                   ))}
                 </div>
-                <button onClick={() => setForm({ ...EMPTY })} className="flex items-center gap-1.5 text-[11px] text-text-dim hover:text-text-muted mt-5 transition-colors">
-                  <RotateCcw size={10} /> Reset form
-                </button>
+                <button onClick={() => setForm({ ...EMPTY })} className="flex items-center gap-1.5 text-[11px] text-text-dim hover:text-text-muted mt-5 mx-auto transition-colors"><RotateCcw size={10} /> Reset</button>
               </div>
             </div>
           </div>
