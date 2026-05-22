@@ -78,7 +78,6 @@ export default function Layout() {
 
       {/* Sidebar */}
       <aside className="w-[72px] flex flex-col items-center py-6 gap-1 border-r border-border shrink-0 relative z-10 bg-bg/80 backdrop-blur-xl">
-        {/* Logo */}
         <NavLink to="/" className="mb-8">
           <motion.div
             whileHover={{ scale: 1.08 }}
@@ -88,7 +87,6 @@ export default function Layout() {
           </motion.div>
         </NavLink>
 
-        {/* Nav */}
         <nav className="flex flex-col gap-1.5 flex-1">
           {NAV.map(({ to, icon: Icon, label }) => (
             <NavLink
@@ -111,7 +109,6 @@ export default function Layout() {
           ))}
         </nav>
 
-        {/* Settings */}
         <button
           onClick={() => setShowSettings(true)}
           className="w-11 h-11 rounded-[12px] flex items-center justify-center text-text-dim hover:text-text-muted hover:bg-white/[0.03] transition-all"
@@ -120,8 +117,8 @@ export default function Layout() {
         </button>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 min-h-screen overflow-auto relative z-10">
+      {/* Main — full center */}
+      <main className="flex-1 min-h-screen relative z-10 flex flex-col">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -129,14 +126,13 @@ export default function Layout() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="min-h-screen"
+            className="flex-1 flex flex-col"
           >
             <Outlet />
           </motion.div>
         </AnimatePresence>
       </main>
 
-      {/* Settings Modal */}
       <AnimatePresence>
         {showSettings && <ApiKeyModal onClose={() => setShowSettings(false)} />}
       </AnimatePresence>
