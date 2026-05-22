@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Zap, MessageSquare, Hammer, Layers, Cpu, GitBranch, Wand2, ArrowRight, Sparkles } from 'lucide-react'
+import { Zap, MessageSquare, Hammer, Layers, Cpu, GitBranch, Wand2, ArrowRight, Sparkles, ArrowUpRight } from 'lucide-react'
 import { useAgents } from '../lib/agents'
 import { getStoredKey } from '../lib/mimo'
 import ProceduralAvatar from '../components/ProceduralAvatar'
@@ -217,7 +217,7 @@ export default function Home() {
           <p className="body-sm mb-4">AI Agent Studio · Powered by MiMo LLM</p>
           <div className="flex items-center justify-center gap-6 text-[11px] text-text-dim">
             <a href="https://github.com/azulaagent/luminary" target="_blank" rel="noopener" className="hover:text-text-secondary transition-colors flex items-center gap-1">
-              GitHub <ExternalLink size={10} />
+              GitHub <ArrowUpRight size={10} />
             </a>
             <span className="text-border">·</span>
             <span>Built with React + Tailwind</span>
